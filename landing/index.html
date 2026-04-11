@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyLingo Pro — Python IDE + Удалённый доступ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --bg: #0a0a0f; --surface: #12121a; --primary: #00d4ff; --accent: #a855f7; --text: #e4e4e7; --text-muted: #71717a; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+        .hero { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem; background: radial-gradient(ellipse at 50% 0%, rgba(0,212,255,0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(168,85,247,0.1) 0%, transparent 40%), var(--bg); }
+        .hero::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px); background-size: 50px 50px; pointer-events: none; }
+        .badge { display: inline-block; padding: 0.5rem 1rem; background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3); border-radius: 50px; font-size: 0.875rem; color: var(--primary); margin-bottom: 1.5rem; }
+        h1 { font-size: clamp(2.5rem, 8vw, 4.5rem); font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; background: linear-gradient(135deg, var(--text) 0%, var(--primary) 50%, var(--accent) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .subtitle { font-size: 1.25rem; color: var(--text-muted); max-width: 600px; margin-bottom: 2.5rem; }
+        .cta-group { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-bottom: 4rem; }
+        .btn { padding: 1rem 2rem; border-radius: 12px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), #0891b2); color: #000; border: none; box-shadow: 0 0 30px rgba(0,212,255,0.3); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 50px rgba(0,212,255,0.5); }
+        .btn-secondary { background: transparent; color: var(--text); border: 1px solid rgba(255,255,255,0.2); }
+        .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+        .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 1200px; width: 100%; padding: 2rem; }
+        .feature-card { background: var(--surface); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 2rem; transition: all 0.3s ease; }
+        .feature-card:hover { border-color: rgba(0,212,255,0.3); transform: translateY(-4px); }
+        .feature-icon { width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1rem; }
+        .feature-card h3 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+        .feature-card p { color: var(--text-muted); font-size: 0.9rem; }
+        .pricing { padding: 4rem 2rem; text-align: center; background: var(--surface); width: 100%; }
+        .pricing-grid { display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap; max-width: 1000px; margin: 2rem auto; }
+        .price-card { background: var(--bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 2.5rem; flex: 1; min-width: 280px; max-width: 350px; }
+        .price-card.featured { border-color: var(--primary); box-shadow: 0 0 40px rgba(0,212,255,0.15); }
+        .price { font-size: 3rem; font-weight: 800; margin: 1rem 0; }
+        .price span { font-size: 1rem; color: var(--text-muted); }
+        .price-card ul { list-style: none; text-align: left; margin: 1.5rem 0; }
+        .price-card li { padding: 0.5rem 0; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem; }
+        .price-card li::before { content: '✓'; color: var(--primary); }
+        footer { padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.875rem; }
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <div class="badge">🚀 Теперь в Telegram</div>
+        <h1>Python IDE + Удалённый ПК<br>в одном приложении</h1>
+        <p class="subtitle">Профессиональная среда для изучения Python и управления компьютером из любой точки мира. Без абонентской платы.</p>
+        <div class="cta-group">
+            <a href="#pricing" class="btn btn-primary"><span>🚀</span> Начать бесплатно</a>
+            <a href="#features" class="btn btn-secondary"><span>👁</span> Возможности</a>
+        </div>
+    </section>
+    <section id="features" class="features">
+        <div class="feature-card"><div class="feature-icon">🐍</div><h3>Python в браузере</h3><p>Пиши и запускай Python код прямо в браузере. Интерпретатор работает на твоём устройстве.</p></div>
+        <div class="feature-card"><div class="feature-icon">🎮</div><h3>Удалённый доступ</h3><p>Управляй своим компьютером из любой точки мира через WebRTC. Без серверов.</p></div>
+        <div class="feature-card"><div class="feature-icon">📚</div><h3>Интерактивный курс</h3><p>Встроенный курс Python с автоматической проверкой кода.</p></div>
+        <div class="feature-card"><div class="feature-icon">🔒</div><h3>Безопасная песочница</h3><p>Запускай любой код в изолированной среде.</p></div>
+        <div class="feature-card"><div class="feature-icon">⚡</div><h3>Мгновенный запуск</h3><p>Работает в Termux на Android.</p></div>
+        <div class="feature-card"><div class="feature-icon">💸</div><h3>Бесплатно навсегда</h3><p>Базовые функции бесплатны.</p></div>
+    </section>
+    <section id="pricing" class="pricing">
+        <h2>Простой тариф</h2>
+        <div class="pricing-grid">
+            <div class="price-card">
+                <h3>🆓 Free</h3>
+                <div class="price">$0<span>/мес</span></div>
+                <ul><li>Python IDE</li><li>Курс Python (5 уроков)</li><li>100 запусков кода/день</li></ul>
+                <a href="#" class="btn btn-secondary" style="width:100%;justify-content:center">Начать</a>
+            </div>
+            <div class="price-card featured">
+                <div class="badge" style="margin-bottom:0.5rem">Популярный</div>
+                <h3>⚡ Pro</h3>
+                <div class="price">$5<span>/мес</span></div>
+                <ul><li>Всё из Free</li><li>Безлимитные запуски</li><li>Полный курс Python</li><li>Удалённый доступ PRO</li></ul>
+                <a href="#" class="btn btn-primary" style="width:100%;justify-content:center">Купить</a>
+            </div>
+        </div>
+    </section>
+    <footer><p>© 2026 PyLingo Pro</p></footer>
+</body>
+</html>

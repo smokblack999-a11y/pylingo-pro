@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyLingo Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --bg: #0d1117; --surface: #161b22; --border: #30363d; --primary: #58a6ff; --success: #3fb950; --error: #f85149; --text: #c9d1d9; --text-muted: #8b949e; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+        .app { display: flex; height: 100vh; }
+        .sidebar { width: 280px; background: var(--surface); border-right: 1px solid var(--border); padding: 1rem; overflow-y: auto; }
+        .logo { font-size: 1.25rem; font-weight: 800; color: var(--primary); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .xp-bar { background: var(--border); border-radius: 10px; height: 8px; margin-bottom: 0.5rem; overflow: hidden; }
+        .xp-fill { background: linear-gradient(90deg, var(--primary), #a855f7); height: 100%; transition: width 0.3s; }
+        .xp-text { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+        .lesson-item { padding: 0.75rem; border-radius: 8px; cursor: pointer; margin-bottom: 0.5rem; transition: all 0.2s; border: 1px solid transparent; }
+        .lesson-item:hover { background: rgba(88,166,255,0.1); }
+        .lesson-item.active { background: rgba(88,166,255,0.15); border-color: var(--primary); }
+        .lesson-title { font-weight: 600; font-size: 0.9rem; }
+        .lesson-xp { font-size: 0.75rem; color: var(--text-muted); }
+        .main { flex: 1; display: flex; flex-direction: column; }
+        .header { padding: 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .lesson-info h2 { font-size: 1.1rem; }
+        .lesson-info p { font-size: 0.8rem; color: var(--text-muted); }
+        .editor-container { flex: 1; display: flex; flex-direction: column; padding: 1rem; gap: 1rem; }
+        .editor { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+        .editor-header { padding: 0.75rem 1rem; background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-muted); }
+        textarea { width: 100%; height: 100%; background: transparent; border: none; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; padding: 1rem; resize: none; outline: none; line-height: 1.6; }
+        .output { height: 200px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+        .output-header { padding: 0.75rem 1rem; background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--border); font-size: 0.8rem; color: var(--text-muted); display: flex; justify-content: space-between; }
+        .output-content { padding: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; height: calc(100% - 40px); overflow-y: auto; white-space: pre-wrap; }
+        .output-content.error { color: var(--error); }
+        .output-content.success { color: var(--success); }
+        .btn { padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
+        .btn-primary { background: var(--primary); color: #000; }
+        .btn-primary:hover { filter: brightness(1.1); }
+        .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+        .remote-panel { position: fixed; right: 1rem; top: 50%; transform: translateY(-50%); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; width: 200px; }
+        .remote-panel h4 { margin-bottom: 0.5rem; }
+        .remote-id { font-family: 'JetBrains Mono', monospace; background: var(--bg); padding: 0.5rem; border-radius: 6px; font-size: 0.8rem; word-break: break-all; }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="logo">🐍 PyLingo Pro</div>
+            <div class="xp-bar"><div class="xp-fill" id="xpFill" style="width: 0%"></div></div>
+            <div class="xp-text">XP: <span id="xpCount">0</span> | Level: <span id="levelCount">1</span></div>
+            <div id="lessonsList"></div>
+        </aside>
+        <main class="main">
+            <header class="header">
+                <div class="lesson-info">
+                    <h2 id="lessonTitle">Загрузка...</h2>
+                    <p id="lessonDesc"></p>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn btn-secondary" onclick="showHint()">💡 Подсказка</button>
+                    <button class="btn btn-primary" onclick="runCode()">▶ Запустить</button>
+                </div>
+            </header>
+            <div class="editor-container">
+                <div class="editor">
+                    <div class="editor-header">📝 main.py</div>
+                    <textarea id="codeEditor" spellcheck="false"></textarea>
+                </div>
+                <div class="output">
+                    <div class="output-header">
+                        <span>📤 Вывод</span>
+                        <button class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.7rem;" onclick="clearOutput()">Очистить</button>
+                    </div>
+                    <div class="output-content" id="output"></div>
+                </div>
+            </div>
+        </main>
+        <div class="remote-panel">
+            <h4>🌐 Remote Access</h4>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">Поделиться доступом:</p>
+            <div class="remote-id" id="peerId">Загрузка...</div>
+            <button class="btn btn-secondary" style="width: 100%; margin-top: 0.5rem; font-size: 0.75rem;" onclick="copyId()">📋 Копировать</button>
+        </div>
+    </div>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script>
+        let currentLesson = 0, lessons = [], xp = parseInt(localStorage.getItem('xp') || '0'), peer = null;
+        async function init() {
+            const resp = await fetch('/api/lessons');
+            lessons = await resp.json();
+            renderLessons();
+            loadLesson(0);
+            peer = new Peer();
+            peer.on('open', id => document.getElementById('peerId').textContent = id);
+            updateXP();
+        }
+        function renderLessons() {
+            const list = document.getElementById('lessonsList');
+            list.innerHTML = lessons.map((l, i) => '<div class="lesson-item ' + (i === currentLesson ? 'active' : '') + '" onclick="loadLesson(' + i + ')"><div class="lesson-title">' + (i+1) + '. ' + l.title + '</div><div class="lesson-xp">+' + l.xp_reward + ' XP</div></div>').join('');
+        }
+        function loadLesson(index) {
+            currentLesson = index;
+            const lesson = lessons[index];
+            document.getElementById('lessonTitle').textContent = lesson.title;
+            document.getElementById('lessonDesc').textContent = lesson.description;
+            document.getElementById('codeEditor').value = lesson.starter_code;
+            renderLessons();
+            clearOutput();
+        }
+        async function runCode() {
+            const code = document.getElementById('codeEditor').value;
+            const output = document.getElementById('output');
+            output.textContent = '⏳ Выполнение...';
+            output.className = 'output-content';
+            try {
+                const resp = await fetch('/api/run', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({code})});
+                const result = await resp.json();
+                if (result.error) { output.textContent = '❌ ' + result.error; output.className = 'output-content error'; }
+                else { output.textContent = result.output.join('\n') || '✅ Выполнено'; output.className = 'output-content success'; xp += lessons[currentLesson].xp_reward; updateXP(); saveProgress(); if (currentLesson < lessons.length - 1) setTimeout(() => loadLesson(currentLesson + 1), 1000); }
+            } catch (e) { output.textContent = '❌ Ошибка: ' + e.message; output.className = 'output-content error'; }
+        }
+        function showHint() { alert('💡 Подсказка:\n' + lessons[currentLesson].solution); }
+        function clearOutput() { document.getElementById('output').textContent = ''; }
+        function updateXP() { const level = Math.floor(xp / 100) + 1; const xpPercent = (xp % 100); document.getElementById('xpCount').textContent = xp; document.getElementById('levelCount').textContent = level; document.getElementById('xpFill').style.width = xpPercent + '%'; localStorage.setItem('xp', xp); }
+        async function saveProgress() { await fetch('/api/save_progress', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({xp})}); }
+        function copyId() { navigator.clipboard.writeText(document.getElementById('peerId').textContent); alert('📋 ID скопирован!'); }
+        init();
+    </script>
+</body>
+</html>
