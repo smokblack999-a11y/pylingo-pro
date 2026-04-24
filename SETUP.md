@@ -1,324 +1,309 @@
-# ⚔️ SAMURAI SUITE - ИНСТРУКЦИЯ ПО НАСТРОЙКЕ
+# ⚔️ SAMURAI SUITE - ПОДРОБНАЯ ИНСТРУКЦИЯ ПО НАСТРОЙКЕ
 
 ## 📋 СОДЕРЖАНИЕ
-
-1. [Быстрый старт](#быстрый-старт)
-2. [Настройка .env](#настройка-env)
-3. [Получение API ключей](#получение-api-ключей)
-4. [Настройка Telegram Bot](#настройка-telegram-bot)
-5. [Запуск и управление](#запуск-и-управление)
-6. [Возможные проблемы](#возможные-проблемы)
+1. [Требования](#требования)
+2. [Установка](#установка)
+3. [Настройка .env](#настройка-env)
+4. [Первый запуск](#первый-запуск)
+5. [Настройка Telegram](#настройка-telegram)
+6. [Настройка интеграций](#настройка-интеграций)
+7. [Управление процессами](#управление-процессами)
+8. [Устранение проблем](#устранение-проблем)
 
 ---
 
-## 🚀 БЫСТРЫЙ СТАРТ
+## 1. ТРЕБОВАНИЯ
 
-### Шаг 1: Установка
+### Минимальные:
+- **Termux** (Android) или Linux сервер
+- **Node.js** v16+
+- **Python** 3.8+
+- **Redis** (для очередей)
+- **100MB** свободного места
 
+### Рекомендуемые:
+- **2GB RAM**
+- **SSH доступ** (для удалённого управления)
+- **Статический IP** или DDNS
+
+---
+
+## 2. УСТАНОВКА
+
+### Вариант А: Автоматическая (рекомендуется)
 ```bash
-# Клонируем репозиторий
+# Клонирование репозитория
 git clone https://github.com/smokblack999-a11y/pylingo-pro.git ~/samurai
-cd ~/samurai
 
-# Запускаем установщик
+# Запуск установщика
+cd ~/samurai
 bash install_full.sh
 ```
 
-### Шаг 2: Запуск
-
+### Вариант Б: Ручная установка
 ```bash
-# После установки открой в браузере:
-http://localhost:3000
+# 1. Установка зависимостей
+pkg update
+pkg install nodejs python git redis openssh curl wget
 
-# Или с другого устройства:
-http://ТВОЙ_IP:3000
+# 2. Клонирование
+git clone https://github.com/smokblack999-a11y/pylingo-pro.git ~/samurai
+
+# 3. Установка npm пакетов
+cd ~/samurai/server
+npm install
+
+# 4. Установка Python пакетов
+pip install flask python-telegram-bot aiohttp python-dotenv
+
+# 5. Запуск Redis
+redis-server --daemonize yes
+
+# 6. Запуск сервера
+cd ~/samurai/server
+node server.js
 ```
 
 ---
 
-## ⚙️ НАСТРОЙКА .ENV
+## 3. НАСТРОЙКА .ENV
 
-### Создай/открой файл:
-
+### Создание файла:
 ```bash
 cd ~/samurai
+cp .env.example .env
 nano .env
 ```
 
-### Пример заполненного .env:
+### Параметры:
 
-```env
-# ═══════════════════════════════════════════════════════════════
-# SAMURAI SUITE - КОНФИГУРАЦИЯ
-# ═══════════════════════════════════════════════════════════════
+#### ОБЯЗАТЕЛЬНЫЕ:
+| Параметр | Описание | Пример |
+|----------|---------|--------|
+| `ANTHROPIC_API_KEY` | API ключ Anthropic (для молекул) | `sk-ant-api03-...` |
+| `JWT_SECRET` | Секрет для JWT токенов (32+ символа) | `samurai_secret_CHANGE_32chars` |
+| `ADMIN_PASSWORD` | Пароль админа | `твой_пароль` |
 
-# ── ОБЯЗАТЕЛЬНО ЗАПОЛНИ ─────────────────────────────────
+#### ОПЦИОНАЛЬНЫЕ:
+| Параметр | Описание | По умолчанию |
+|----------|---------|-------------|
+| `API_PORT` | Порт сервера | `3000` |
+| `REDIS_URL` | URL Redis | `redis://127.0.0.1:6379` |
+| `BOT_TOKEN` | Telegram бот токен | - |
+| `ADMIN_TG_ID` | Telegram ID админа | - |
+| `CLAUDE_MODEL` | Модель Claude | `claude-sonnet-4-20250514` |
 
-# Anthropic API для 3D молекул
-ANTHROPIC_API_KEY=sk-ant-api03-xxxxx
+### Получение API ключей:
 
-# Секретный ключ (любая строка 32+ символа)
-JWT_SECRET=samurai_super_secret_key_change_this_32_chars
+#### Anthropic API Key:
+1. Зарегистрируйся на [console.anthropic.com](https://console.anthropic.com)
+2. Создай API ключ
+3. Скопируй в `.env`
 
-# Пароль админа
-ADMIN_PASSWORD=МойПароль123
-
-# ── ОПЦИОНАЛЬНО ────────────────────────────────────────────
-
-# Telegram Bot Token
-BOT_TOKEN=123456789:ABCDefGHIjklMNOpqrsTUVwxyz
-
-# Твой Telegram ID
-ADMIN_TG_ID=123456789
-
-# Порт (по умолчанию 3000)
-API_PORT=3000
-
-# Claude модель
-CLAUDE_MODEL=claude-sonnet-4-20250514
-MAX_TOKENS=2000
-```
-
----
-
-## 🔑 ПОЛУЧЕНИЕ API КЛЮЧЕЙ
-
-### 1. ANTHROPIC_API_KEY (для 3D молекул)
-
-1. Зайди на https://console.anthropic.com/
-2. Зарегистрируйся или войди
-3. API Keys → Create Key
-4. Скопируй ключ (начинается с `sk-ant-`)
-5. Вставь в `.env`:
-
-```env
-ANTHROPIC_API_KEY=sk-ant-api03-xxxxx
-```
-
-### 2. TELEGRAM BOT TOKEN
-
-1. Открой @BotFather в Telegram
-2. Отправь `/newbot`
+#### Telegram Bot:
+1. Напиши @BotFather в Telegram
+2. Команда `/newbot`
 3. Следуй инструкциям
-4. Получи токен (формат: `123456789:ABCDefGHI...`)
-5. Добавь в `.env`:
+4. Скопируй токен в `.env`
 
-```env
-BOT_TOKEN=123456789:ABCDefGHIjklMNOpqrsTUVwxyz
-```
-
-### 3. ADMIN_TG_ID (твой Telegram ID)
-
-1. Открой @userinfobot в Telegram
-2. Получи свой ID (число)
-3. Добавь в `.env`:
-
-```env
-ADMIN_TG_ID=123456789
-```
+#### Telegram ID:
+1. Напиши @userinfobot
+2. Скопируй свой ID в `ADMIN_TG_ID`
 
 ---
 
-## 📱 НАСТРОЙКА TELEGRAM BOT
+## 4. ПЕРВЫЙ ЗАПУСК
 
-### Команды бота:
-
-| Команда | Описание |
-|---------|----------|
-| `/start` | Регистрация в системе |
-| `/hunt <запрос>` | Поиск цели |
-| `/start_hunt <цель>` | Начать охоту |
-
-### Пример использования:
-
-```
-/hunt crypto arbitrage
-/start_hunt BTC/USDT arbitrage
-```
-
-### Структура бота:
-
-```
-⚔️ SAMURAI HUNTER BOT
-├── Регистрация охотников
-├── Поиск целей
-├── Статистика клана
-├── Реферальная система
-└── Система выплат
-```
-
----
-
-## 🔧 ЗАПУСК И УПРАВЛЕНИЕ
-
-### Основные команды:
-
+### После настройки .env:
 ```bash
-# Статус всех процессов
-pm2 status
+cd ~/samurai
 
-# Логи сервера
-pm2 logs samurai-server
+# Запуск Redis
+redis-server --daemonize yes
 
-# Логи конкретного процесса
-pm2 logs samurai-telegram
-
-# Перезапуск всех процессов
-pm2 restart all
-
-# Остановка всех процессов
-pm2 stop all
-
-# Просмотр в реальном времени
-pm2 monit
-```
-
-### Ручной запуск:
-
-```bash
-# Запуск сервера
-cd ~/samurai/server
-node server.js
-
-# Запуск в фоне
-nohup node server.js > logs/server.log 2>&1 &
+# Запуск сервера (в фоне)
+cd server
+nohup node server.js > ../logs/server.log 2>&1 &
 
 # Проверка
 curl http://localhost:3000/health
 ```
 
-### Автозапуск при перезагрузке:
+### Ожидаемый ответ:
+```json
+{
+  "status": "ok",
+  "version": "54.0.0",
+  "uptime": 10,
+  "redis": true,
+  "users": 1
+}
+```
 
+---
+
+## 5. НАСТРОЙКА TELEGRAM
+
+### Запуск Telegram Hunter Bot:
 ```bash
-# Сохраняем процессы
-pm2 save
+cd ~/samurai
 
-# Генерируем startup скрипт
+# Убедись что BOT_TOKEN заполнен в .env
+nano .env
+# Добавь: BOT_TOKEN=1234567890:ABCdefGHIjklMNOpqrsTUVwxyz
+
+# Запуск бота
+python3 integrations/telegram_bot.py
+```
+
+### Команды бота:
+| Команда | Описание |
+|--------|----------|
+| `/start` | Регистрация в системе |
+| `/hunt <запрос>` | Поиск цели |
+| `/start_hunt <цель>` | Начать охоту |
+
+### Проверка работы:
+1. Открой своего бота в Telegram
+2. Напиши `/start`
+3. Бот должен ответить приветствием
+
+---
+
+## 6. НАСТРОЙКА ИНТЕГРАЦИЙ
+
+### Discord Hunter:
+```bash
+# Токен получаешь на discord.com/developers
+# Добавь в .env:
+DISCORD_TOKEN=твой_токен
+
+# Запуск
+python3 integrations/discord_bot.py
+```
+
+### Twitter/X Hunter:
+```bash
+# Добавь в .env:
+TWITTER_API_KEY=твой_ключ
+TWITTER_API_SECRET=твой_секрет
+
+# Запуск
+python3 integrations/twitter_bot.py
+```
+
+### Binance Scanner:
+```bash
+# Автоматически запускается с market.py
+python3 python/market.py
+```
+
+---
+
+## 7. УПРАВЛЕНИЕ ПРОЦЕССАМИ
+
+### Основные команды PM2:
+```bash
+# Статус всех процессов
+pm2 status
+
+# Логи конкретного процесса
+pm2 logs samurai-server
+
+# Перезапуск
+pm2 restart samurai-server
+
+# Остановка
+pm2 stop all
+
+# Удаление всех
+pm2 delete all
+```
+
+### Ручное управление:
+```bash
+# Проверка что процесс работает
+ps aux | grep node
+
+# Принудительная остановка
+pkill -f "node server.js"
+# Запуск заново
+cd ~/samurai/server && node server.js
+```
+
+### Автозапуск:
+```bash
+# Создание автозапуска
 pm2 startup
-# (скопируй и выполни команду из вывода)
+# Сохранение конфигурации
+pm2 save
 ```
 
 ---
 
-## 🌐 ДОСТУП ИЗВНЕ
+## 8. УСТРАНЕНИЕ ПРОБЛЕМ
 
-### Узнай свой IP:
-
+### Сервер не запускается:
 ```bash
-# В Termux:
-ip route get 1.1.1.1 | grep -oP 'src \K\S+'
+# Проверь логи
+tail -50 ~/samurai/logs/server.log
 
-# Или:
-ifconfig | grep 'inet ' | grep -v 127
+# Проверь порт
+lsof -i :3000
+
+# Убить процесс на порту
+fuser -k 3000/tcp
 ```
 
-### Доступ:
-
-```
-Локально:  http://localhost:3000
-Внешний:    http://ТВОЙ_IP:3000
-
-Пример:
-http://192.168.1.100:3000
-```
-
-### Проброс портов (роутер):
-
-Если нужен доступ из интернета:
-1. Зайди в настройки роутера
-2. Пробрось порт 3000 на устройство
-3. Узнай внешний IP: https://2ip.ru
-
----
-
-## 🛠 ВОЗМОЖНЫЕ ПРОБЛЕМЫ
-
-### Проблема: "Node not found"
-
+### Redis не работает:
 ```bash
-# Установи Node.js
-pkg install nodejs
-```
+# Проверка статуса
+redis-cli ping
+# Должен ответить PONG
 
-### Проблема: "Redis connection refused"
-
-```bash
-# Запусти Redis
+# Запуск вручную
 redis-server --daemonize yes
-
-# Или установи
-pkg install redis
 ```
 
-### Проблема: Server не запускается
-
+### Ошибка API ключа:
 ```bash
-# Проверь логи
-cat ~/samurai/logs/server.out.log
+# Проверь что ключ не пустой
+cat ~/samurai/.env | grep API
 
-# Или запусти вручную для отладки
-cd ~/samurai/server
-node server.js
+# Проверь формат (должен начинаться с sk-ant-)
 ```
 
-### Проблема: "Module not found"
-
+### Бот Telegram не отвечает:
 ```bash
-# Переустанови зависимости
-cd ~/samurai/server
-rm -rf node_modules package-lock.json
-npm install
-```
-
-### Проблема: Telegram Bot не работает
-
-```bash
-# Проверь токен в .env
-cat ~/samurai/.env | grep BOT_TOKEN
+# Проверь токен
+curl -s "https://api.telegram.org/bot<TOKEN>/getMe"
 
 # Проверь логи
-pm2 logs samurai-telegram
-```
-
-### Проблема: Не заходит на Web UI
-
-```bash
-# Проверь что порт открыт
-netstat -tlnp | grep 3000
-
-# Проверь firewall
-# Android: Settings → Apps → Termux → Network
+tail -50 ~/samurai/logs/telegram.log
 ```
 
 ---
 
 ## 📊 МОНИТОРИНГ
 
-### Чек-лист перед запуском:
-
-- [ ] .env заполнен (минимум JWT_SECRET, ADMIN_PASSWORD)
-- [ ] Redis запущен
-- [ ] Node_modules установлены
-- [ ] Server работает
-- [ ] PM2 настроен
-
-### Проверка статуса:
-
+### Проверка здоровья системы:
 ```bash
-# 1. Проверь health endpoint
 curl http://localhost:3000/health
+```
 
-# Ожидаемый ответ:
-{"status":"ok","version":"54.0.0","uptime":123,"redis":true,"users":1}
+### Проверка метрик:
+```bash
+# Только для админа
+curl -H "Authorization: Bearer <TOKEN>" http://localhost:3000/api/analytics
+```
 
-# 2. Проверь PM2
-pm2 status
+### Логи в реальном времени:
+```bash
+# Все процессы
+pm2 logs
 
-# Должны быть запущены:
-# - samurai-server
-# - samurai-telegram (если BOT_TOKEN задан)
-# - samurai-market
-# - samurai-sensory
+# Конкретный
+pm2 logs samurai-server --lines 50
 ```
 
 ---
@@ -326,28 +311,41 @@ pm2 status
 ## 🔐 БЕЗОПАСНОСТЬ
 
 ### Рекомендации:
+1. **Никогда не публикуй** `.env` файл
+2. Используй **сложные пароли** (16+ символов)
+3. Ограничь **доступ к порту 3000** файрволом
+4. Регулярно **обновляй зависимости**
+5. **Не запускай от root** без необходимости
 
-1. **Не делись .env файлом**
-2. **Используй сложные пароли**
-3. **Не запускай от root** (в Termux это нормально)
-4. **Обновляй зависимости** периодически
-
+### Защита SSH:
 ```bash
-# Обновление Node.js пакетов
-cd ~/samurai/server
-npm update
-
-# Обновление Python пакетов
-pip install --upgrade python-telegram-bot aiohttp
+# Отключи парольную авторизацию в /etc/ssh/sshd_config
+PasswordAuthentication no
+PermitRootLogin without-password
 ```
 
 ---
 
-## 📞 КОНТАКТЫ
+## 📞 ПОДДЕРЖКА
 
-- GitHub: https://github.com/smokblack999-a11y/pylingo-pro
-- Issues: https://github.com/smokblack999-a11y/pylingo-pro/issues
+При проблемах проверь:
+1. Логи: `pm2 logs`
+2. Статус процессов: `pm2 status`
+3. Health endpoint: `curl http://localhost:3000/health`
 
 ---
 
-⚔️ * Samurai Suite - Система автономной охоты за возможностями *
+## ✅ ЧЕК-ЛИСТ ЗАПУСКА
+
+- [ ] Node.js установлен
+- [ ] Python установлен
+- [ ] Redis запущен
+- [ ] `.env` заполнен
+- [ ] Сервер запущен
+- [ ] Web UI доступен
+- [ ] Telegram бот работает (опционально)
+
+
+---
+
+⚔️ *Настройка завершена. Система готова к работе!*
